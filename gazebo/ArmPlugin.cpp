@@ -38,18 +38,18 @@
 #define INPUT_WIDTH   64
 #define INPUT_HEIGHT  64
 #define OPTIMIZER "RMSprop"
-#define LEARNING_RATE 0.01f
-#define REPLAY_MEMORY 10000
+#define LEARNING_RATE 0.001f
+#define REPLAY_MEMORY 20000
 #define BATCH_SIZE 32
 #define USE_LSTM true
-#define LSTM_SIZE 128
+#define LSTM_SIZE 256
 
 /*
 / TODO - Define Reward Parameters
 /
 */
 
-#define REWARD_WIN  1.0f
+#define REWARD_WIN  5.0f
 #define REWARD_LOSS -1.0f
 
 // Define Object Names
@@ -262,21 +262,17 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 		/ TODO - Check if there is collision between the arm and object, then issue learning reward
 		/
 		*/
-		bool arm_collision = (strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM)== 0 );
-		bool gripper_collision = strcmp(contacts->contact(i).collision2().c_str(), COLLISION_POINT)== 0);
+		bool arm_collision = strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM)== 0 ;
+		bool gripper_collision = strcmp(contacts->contact(i).collision2().c_str(), COLLISION_POINT)== 0;
 
 			if(TASK==1)
 			{
 				if(arm_collision)
 				{
-				rewardHistory = REWARD_WIN * 3;
+				rewardHistory = REWARD_WIN * 4;
 				newReward = true;
 				endEpisode = true;
 				return;
-				}
-				else if (gripper_collision)
-				{
-					rewardHistory = REWARD_WIN * 3;
 				}
 			}
 			else
@@ -285,11 +281,11 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 				{
 					if(gripper_collision)
 					{
-						rewardHistory = REWARD_WIN * 10;
+						rewardHistory = REWARD_WIN * 4;
 					}
 					else
 					{
-						rewardHistory = REWARD_LOSS * 2;
+						rewardHistory = REWARD_LOSS * 5;
 					}
 					newReward = true;
 					endEpisode = true;
@@ -610,7 +606,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo)
 						
 			if(DEBUG){printf("GROUND CONTACT, EOE\n");}
 
-			rewardHistory = REWARD_LOSS * 2;
+			rewardHistory = REWARD_LOSS * 5;
 			newReward     = true;
 			endEpisode    = true;
 		}
@@ -630,7 +626,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo)
 			if( episodeFrames > 1 )
 			{
 				const float distDelta  = lastGoalDistance - distGoal;
-				float alpha = 0.85f
+				float alpha = 0.4f;
 				// compute the smoothed moving average of the delta of the distance to the goal
 				avgGoalDelta  = ( avgGoalDelta * alpha) + ( distDelta * ( 1 - alpha ) );
 				rewardHistory = avgGoalDelta;
